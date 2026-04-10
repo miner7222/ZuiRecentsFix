@@ -1,0 +1,4 @@
+-keep class io.github.miner7222.fixrecents.RecentsFixModule
+-repackageclasses ""
+-allowaccessmodification
+-dontwarn java.lang.reflect.AnnotatedType

@@ -1,0 +1,84 @@
+name: Build and Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      GRADLE_USER_HOME: ${{ github.workspace }}\.gradle
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Verify Version Match
+        shell: bash
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/}
+
+          GRADLE_VERSION=$(./gradlew.bat -q :app:printVersionName)
+          
+          echo "Git Tag Version: $TAG_VERSION"
+          echo "Gradle Version: $GRADLE_VERSION"
+
+          if [ "$TAG_VERSION" != "$GRADLE_VERSION" ]; then
+            echo "Error: Version mismatch!"
+            echo "Tag is '$TAG_VERSION' but build.gradle.kts says '$GRADLE_VERSION'"
+            exit 1
+          fi
+          echo "Version match confirmed."
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Decode Keystore
+        shell: bash
+        run: |
+          echo "${{ secrets.SIGNING_KEY_STORE_BASE64 }}" | base64 --decode > app/release-keystore.jks
+
+      - name: Setup Gradle Cache
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Build Release APK
+        env:
+          SIGNING_KEY_STORE_PATH: release-keystore.jks
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+        run: .\gradlew.bat assembleRelease
+
+      - name: Rename APK
+        run: |
+          mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/ZuiRecentsFix-${{ github.ref_name }}.apk
+
+      - name: Generate APK checksum
+        shell: bash
+        run: |
+          sha256sum app/build/outputs/apk/release/ZuiRecentsFix-${{ github.ref_name }}.apk \
+            > app/build/outputs/apk/release/ZuiRecentsFix-${{ github.ref_name }}.apk.sha256
+
+      - name: Create Release and Upload APK
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            app/build/outputs/apk/release/ZuiRecentsFix-${{ github.ref_name }}.apk
+            app/build/outputs/apk/release/ZuiRecentsFix-${{ github.ref_name }}.apk.sha256
+          generate_release_notes: true
+
+      - name: Cleanup keystore
+        if: ${{ always() }}
+        shell: bash
+        run: rm -f app/release-keystore.jks

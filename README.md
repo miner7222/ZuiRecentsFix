@@ -1,0 +1,21 @@
+# ZuiRecentsFix
+
+## Description
+
+This LSPosed module patches SystemUI recents flow so overview stays visible when a third-party launcher is default on ZUI 17.5.
+
+## Installation and Usage
+
+### 1. Download the APK
+
+Use official LSPosed build or fork build that supports Xposed API 101+.
+
+### 2. Enable the Module
+
+Find `ZuiRecentsFix` in module list and enable it.
+
+### 3. Check Scope
+
+Make sure `com.android.systemui` is included in module scope.
+
+### 4. Reboot
