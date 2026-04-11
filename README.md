@@ -18,4 +18,8 @@ Find `ZuiRecentsFix` in module list and enable it.
 
 Make sure `com.android.systemui` is included in module scope.
 
-### 4. Reboot
+### 4. Grant Root
+
+Before reboot, grant root permission to `ZuiRecentsFix` in your manager app.
+
+### 5. Reboot
