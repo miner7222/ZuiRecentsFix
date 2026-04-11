@@ -1,6 +1,6 @@
 [versions]
 agp = "9.1.0"
-annotation = "1.9.1"
+annotation = "1.10.0"
 
 [libraries]
 androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "annotation" }
