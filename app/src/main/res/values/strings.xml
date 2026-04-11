@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name" translatable="false">ZuiRecentsFix</string>
-    <string name="module_description">(Need Root) Keeps Recents visible instead of bouncing back home when a third-party launcher is default on ZUI 17.5.</string>
+    <string name="module_description">Keeps Recents visible instead of bouncing back home when a third-party launcher is default on ZUI 17.5.</string>
 </resources>
