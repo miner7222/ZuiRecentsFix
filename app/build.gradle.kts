@@ -3,6 +3,7 @@ import java.io.FileInputStream
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -63,6 +64,21 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+            freeCompilerArgs.addAll(
+                "-Xno-param-assertions",
+                "-Xno-call-assertions",
+                "-Xno-receiver-assertions"
+            )
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
     packaging {
         resources.excludes += "DebugProbesKt.bin"
         resources.excludes += "**/kotlin/**"
@@ -78,5 +94,11 @@ tasks.register("printVersionName") {
 
 dependencies {
     implementation(libs.androidx.annotation)
-    compileOnly("io.github.libxposed:api:101.0.1")
+
+    compileOnly(libs.xposed.api)
+    compileOnly(libs.xposed.api.sources)
+    implementation(libs.yukihook.api)
+    ksp(libs.yukihook.ksp.xposed)
+    implementation(libs.kavaref.core)
+    implementation(libs.kavaref.extension)
 }

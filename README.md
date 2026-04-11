@@ -8,7 +8,7 @@ This LSPosed module patches SystemUI recents flow so overview stays visible when
 
 ### 1. Download the APK
 
-Use official LSPosed build or fork build that supports Xposed API 101+.
+Download the latest release from GitHub. Supported on ZUI 17.5+.
 
 ### 2. Enable the Module
 
