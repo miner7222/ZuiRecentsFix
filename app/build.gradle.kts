@@ -13,8 +13,8 @@ android {
         applicationId = "io.github.miner7222.fixrecents"
         minSdk = 26
         targetSdk = 36
-        versionCode = 101
-        versionName = "v1.0.1"
+        versionCode = 102
+        versionName = "v1.0.2"
     }
 
     signingConfigs {
