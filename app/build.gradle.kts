@@ -3,7 +3,6 @@ import java.io.FileInputStream
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.ksp)
 }
 
 android {
@@ -96,11 +95,7 @@ dependencies {
     implementation(libs.androidx.annotation)
 
     testImplementation(libs.junit)
+    testImplementation(libs.libxposed.api)
 
-    compileOnly(libs.xposed.api)
-    compileOnly(libs.xposed.api.sources)
-    implementation(libs.yukihook.api)
-    ksp(libs.yukihook.ksp.xposed)
-    implementation(libs.kavaref.core)
-    implementation(libs.kavaref.extension)
+    compileOnly(libs.libxposed.api)
 }

@@ -1,29 +1,15 @@
 [versions]
 agp = "9.1.0"
-kotlin = "2.3.20"
-ksp = "2.3.6"
 annotation = "1.10.0"
 junit = "4.13.2"
 
-xposed-api = "82"
-xposed-api-sources = "82:sources"
-yukiHookApi = "1.3.1"
-yukiKspXposed = "1.3.1"
-kavaref = "1.0.2"
-kavaref-extension = "1.0.2"
+libxposedApi = "101.0.1"
 
 [libraries]
 androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "annotation" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 
-xposed-api = { group = "de.robv.android.xposed", name = "api", version.ref = "xposed-api" }
-xposed-api-sources = { group = "de.robv.android.xposed", name = "api", version.ref = "xposed-api-sources" }
-yukihook-api = { group = "com.highcapable.yukihookapi", name = "api", version.ref = "yukiHookApi" }
-yukihook-ksp-xposed = { group = "com.highcapable.yukihookapi", name = "ksp-xposed", version.ref = "yukiKspXposed" }
-kavaref-extension = { module = "com.highcapable.kavaref:kavaref-extension", version.ref = "kavaref-extension" }
-kavaref-core = { module = "com.highcapable.kavaref:kavaref-core", version.ref = "kavaref" }
+libxposed-api = { group = "io.github.libxposed", name = "api", version.ref = "libxposedApi" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

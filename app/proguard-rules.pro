@@ -1,4 +1,5 @@
--keep class io.github.miner7222.fixrecents.RecentsFixModule
+-keep class io.github.miner7222.fixrecents.MainHook { *; }
+-adaptresourcefilecontents META-INF/xposed/java_init.list
 -repackageclasses ""
 -allowaccessmodification
 -dontwarn java.lang.reflect.AnnotatedType
