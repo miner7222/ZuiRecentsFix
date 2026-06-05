@@ -2,7 +2,7 @@
 
 ## Description
 
-This LSPosed module is designed to resolve an issue in ZUI(ZUXOS) A16 where Recents screen fails to display correctly when a third-party launcher is set as default.
+This LSPosed module is designed to resolve ZUI(ZUXOS) A16 Recents issues that appear when a third-party launcher is set as default.
 
 While Lenovo has officially fixed this bug in certain builds released since March 2026 (e.g., `TB321FU_ROW_OPEN_USER_Q00002.0_W_ZUI_17.5.10.170_ST_260321`), this module serves as a workaround for users on other models awaiting the update or those who prefer to remain on older builds.
 
@@ -20,6 +20,12 @@ Find `ZuiRecentsFix` in module list and enable it.
 
 ### 3. Check Scope
 
-Make sure `com.android.systemui` is included in module scope.
+Make sure `com.android.systemui` and `com.zui.launcher` are included in module scope.
 
 ### 4. Reboot
+
+## Notes
+
+- TB322/ZUXOS 1.5.10: hooks `com.android.systemui` to keep Recents from failing to open with third-party launchers.
+- TB323/ZUI 18.0.10.084: hooks `com.zui.launcher` fallback Recents so `RecentsActivity` does not start HOME after a non-home task has already launched from Recents.
+- Runtime diagnostics use the `ZuiRecentsFix` log tag.

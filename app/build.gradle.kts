@@ -95,6 +95,8 @@ tasks.register("printVersionName") {
 dependencies {
     implementation(libs.androidx.annotation)
 
+    testImplementation(libs.junit)
+
     compileOnly(libs.xposed.api)
     compileOnly(libs.xposed.api.sources)
     implementation(libs.yukihook.api)

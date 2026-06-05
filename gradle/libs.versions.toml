@@ -3,6 +3,7 @@ agp = "9.1.0"
 kotlin = "2.3.20"
 ksp = "2.3.6"
 annotation = "1.10.0"
+junit = "4.13.2"
 
 xposed-api = "82"
 xposed-api-sources = "82:sources"
@@ -13,6 +14,7 @@ kavaref-extension = "1.0.2"
 
 [libraries]
 androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "annotation" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
 
 xposed-api = { group = "de.robv.android.xposed", name = "api", version.ref = "xposed-api" }
 xposed-api-sources = { group = "de.robv.android.xposed", name = "api", version.ref = "xposed-api-sources" }

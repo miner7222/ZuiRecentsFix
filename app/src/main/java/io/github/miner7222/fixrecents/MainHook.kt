@@ -1,10 +1,12 @@
 package io.github.miner7222.fixrecents
 
 import android.animation.ValueAnimator
+import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.util.Log
 import com.highcapable.yukihookapi.annotation.xposed.InjectYukiHookWithXposed
 import com.highcapable.yukihookapi.hook.factory.configs
 import com.highcapable.yukihookapi.hook.factory.encase
@@ -29,6 +31,27 @@ class MainHook : IYukiHookXposedInit {
         loadApp(SYSTEMUI_PACKAGE) {
             hookGoingToOverviewGuard()
             hookRecentsController()
+        }
+        loadApp(LAUNCHER_PACKAGE) {
+            hookRecentsActivityStartHome()
+        }
+    }
+
+    private fun PackageParam.hookRecentsActivityStartHome() {
+        RECENTS_ACTIVITY_CLASS.toClass().hook {
+            injectMember {
+                method {
+                    name = "M"
+                    emptyParam()
+                }
+                replaceUnit {
+                    if (shouldSuppressRecentsActivityStartHome(instance)) {
+                        return@replaceUnit
+                    }
+
+                    callOriginal()
+                }
+            }
         }
     }
 
@@ -67,6 +90,7 @@ class MainHook : IYukiHookXposedInit {
                     val reason = args[3] as String
 
                     if (shouldSuppressForcedHome(instance, toHome, reason)) {
+                        Log.i(TAG, "Suppressing RecentsController.finishInner forced home, reason=$reason")
                         args[0] = false
                     }
                 }
@@ -89,6 +113,34 @@ class MainHook : IYukiHookXposedInit {
 
         val context = resolveContext(controller) ?: return false
         return isThirdPartyLauncherDefault(context)
+    }
+
+    private fun PackageParam.shouldSuppressRecentsActivityStartHome(activity: Any?): Boolean {
+        val context = (activity as? Context) ?: currentApplication() ?: return false
+        val defaultHomePackage = resolveDefaultHomePackage(context) ?: return false
+        val hasThirdPartyDefaultLauncher = isThirdPartyLauncherPackage(defaultHomePackage)
+        val topTask = findTopRunningTask(context)
+        val topPackageName = topTask?.let { getTaskPackageName(it) }
+        val topTaskIsHome = topTask?.let { isHomeTask(it) } ?: false
+        val topTaskIsLauncher = topPackageName == LAUNCHER_PACKAGE || topPackageName == defaultHomePackage
+
+        val shouldSuppress = RecentsActivityHomeGuard.shouldSuppressStartHome(
+            hasThirdPartyDefaultLauncher = hasThirdPartyDefaultLauncher,
+            topTaskPackageName = topPackageName,
+            topTaskIsHome = topTaskIsHome,
+            topTaskIsLauncherPackage = topTaskIsLauncher
+        )
+
+        val logMessage = "RecentsActivity.StartHomeFromRecents " +
+            "defaultHome=$defaultHomePackage topPackage=$topPackageName " +
+            "topHome=$topTaskIsHome topLauncher=$topTaskIsLauncher"
+        if (shouldSuppress) {
+            Log.i(TAG, "Suppressing $logMessage")
+        } else {
+            Log.i(TAG, "Allowing $logMessage")
+        }
+
+        return shouldSuppress
     }
 
     private fun PackageParam.shouldSkipGoingToOverviewHide(lambda: Any?, controller: Any?): Boolean {
@@ -168,10 +220,52 @@ class MainHook : IYukiHookXposedInit {
     }
 
     private fun isThirdPartyLauncherDefault(context: Context): Boolean {
+        val packageName = resolveDefaultHomePackage(context) ?: return false
+        return isThirdPartyLauncherPackage(packageName)
+    }
+
+    private fun resolveDefaultHomePackage(context: Context): String? {
         val homeIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
         val resolved = context.packageManager.resolveActivity(homeIntent, PackageManager.MATCH_DEFAULT_ONLY)
-        val packageName = resolved?.activityInfo?.packageName ?: return false
+        return resolved?.activityInfo?.packageName
+    }
+
+    private fun isThirdPartyLauncherPackage(packageName: String): Boolean {
         return packageName != "android" && packageName != LAUNCHER_PACKAGE
+    }
+
+    private fun findTopRunningTask(context: Context): ActivityManager.RunningTaskInfo? {
+        return findRunningTasks(context).firstOrNull()
+    }
+
+    private fun findRunningTasks(context: Context): List<ActivityManager.RunningTaskInfo> {
+        return try {
+            val activityManager = context.getSystemService(ActivityManager::class.java) ?: return emptyList()
+            activityManager.getRunningTasks(MAX_RUNNING_TASKS)
+        } catch (ignored: Exception) {
+            emptyList()
+        }
+    }
+
+    private fun isHomeTask(task: ActivityManager.RunningTaskInfo): Boolean {
+        return getActivityType(task) == ACTIVITY_TYPE_HOME ||
+            task.baseIntent?.hasCategory(Intent.CATEGORY_HOME) == true
+    }
+
+    private fun getTaskPackageName(task: ActivityManager.RunningTaskInfo): String? {
+        return task.topActivity?.packageName ?: task.baseActivity?.packageName ?: task.baseIntent?.component?.packageName
+    }
+
+    private fun getActivityType(task: ActivityManager.RunningTaskInfo): Int? {
+        return try {
+            task.javaClass.getField("topActivityType").getInt(task)
+        } catch (ignored: Exception) {
+            try {
+                task.javaClass.getMethod("getActivityType").invoke(task) as? Int
+            } catch (ignored: Exception) {
+                null
+            }
+        }
     }
 
     private fun isEmptyTaskList(value: Any?): Boolean {
@@ -193,6 +287,7 @@ class MainHook : IYukiHookXposedInit {
     }
 
     companion object {
+        private const val TAG = "ZuiRecentsFix"
         private const val SYSTEMUI_PACKAGE = "com.android.systemui"
         private const val LAUNCHER_PACKAGE = "com.zui.launcher"
         private const val EXTERNAL_BINDER_RUNNER_CLASS =
@@ -203,8 +298,11 @@ class MainHook : IYukiHookXposedInit {
             "com.android.wm.shell.recents.RecentTasksController\$\$ExternalSyntheticLambda6"
         private const val RECENTS_CONTROLLER_CLASS =
             "com.android.wm.shell.recents.RecentsTransitionHandler\$RecentsController"
+        private const val RECENTS_ACTIVITY_CLASS = "com.android.quickstep.RecentsActivity"
         private const val GOING_TO_OVERVIEW = "GoingToOverview"
         private const val REQUEST_REASON = "requested"
         private const val STATE_NORMAL = 0
+        private const val ACTIVITY_TYPE_HOME = 2
+        private const val MAX_RUNNING_TASKS = 32
     }
 }
