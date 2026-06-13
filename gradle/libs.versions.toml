@@ -3,7 +3,7 @@ agp = "9.2.1"
 annotation = "1.10.0"
 junit = "4.13.2"
 
-libxposedApi = "101.0.1"
+libxposedApi = "102.0.0"
 
 [libraries]
 androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "annotation" }
